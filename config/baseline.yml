@@ -1,0 +1,41 @@
+# Train on one zero-bias run, evaluate on a handful of signals.
+# `root` is the folder containing the dataset's data/ directory, relative to the repo root.
+# The default "." means ./data/<sample>/. Point it at a shared copy of the dataset if there is one.
+root: .
+
+# Anomaly detection is unsupervised: train and validate on normal data only.
+# Each entry is [sample, split]. Only the zero-bias samples have a "train" split.
+train:
+- [ZB_run396102, train]
+val:
+- [ZB_run396102, valid]
+
+# Evaluation: background (normal data) vs. each signal separately.
+test:
+  background:
+  - [ZB_run396102, test]
+  signals:
+  - [GluGluHto2Tau_Par-MH-125, test]
+  - [WtoTauto3Mu, test]
+  - [SUSYGluGluToBBHTo2B_Par-M-1200, test]
+  - [haa-4b-ma15, test]
+
+# Maximum number of events read per [sample, split] entry (null = everything).
+max_events:
+  train: 1000000
+  val: 200000
+  test: 200000
+
+# How events are turned into a fixed-size input: number of objects kept per collection
+# (highest Et first) and the features of each object, in physical units.
+input:
+  layout: {MET: 1, muons: 4, jets: 10, egammas: 12, taus: 12}
+  features: [Et, eta, phi]
+
+# Applied per feature, to real objects only (padding stays 0):
+#   x -> (x - mean) / std, after Et -> log(1 + Et) if log_et is true.
+# Values estimated from zero-bias data.
+scaling:
+  log_et: true
+  mean: [1.86, 0.0, 3.14]
+  std: [0.63, 1.29, 1.81]

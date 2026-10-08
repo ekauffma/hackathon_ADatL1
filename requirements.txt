@@ -1,0 +1,29 @@
+# Python >= 3.10 recommended.
+# On Linux, `pip install torch` pulls a CUDA-enabled wheel by default. If the GPU
+# driver on your machine needs a specific CUDA build, install torch first from
+# https://pytorch.org/get-started/locally/ and then run `pip install -r requirements.txt`.
+
+# Core numerics / data
+numpy>=1.24
+pandas>=2.0
+pyarrow>=14
+awkward>=2.0
+huggingface-hub>=0.24
+pyyaml>=6.0
+
+# Machine learning
+torch>=2.0
+scikit-learn>=1.3
+
+# Plotting
+matplotlib>=3.7
+mplhep>=0.3
+
+# Notebooks
+jupyterlab>=4.0
+ipykernel>=6.0
+ipywidgets>=8.0
+tqdm>=4.0
+
+# TODO(organisers): add anything else you want participants to have, e.g.
+# tensorflow / keras, hls4ml, qkeras, brevitas, lightning, wandb ...
