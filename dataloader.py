@@ -1,12 +1,11 @@
-"""Turn a data config (config/*.yml) into PyTorch DataLoaders."""
+"""Turn a data config (config/*.yml) into arrays ready for training and evaluation."""
 
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 import numpy as np
-import torch
 import yaml
-from torch.utils.data import DataLoader, TensorDataset
 
 import dataset
 
@@ -75,56 +74,59 @@ def _to_input(x: np.ndarray, input_type: str) -> np.ndarray:
     raise ValueError(f"Unknown input_type: {input_type}")
 
 
-def make_loader(x, mask, input_type: str = "flat", batch_size: int = 1024, shuffle: bool = False) -> DataLoader:
-    ds = TensorDataset(
-        torch.as_tensor(_to_input(x, input_type), dtype=torch.float32),
-        torch.as_tensor(mask, dtype=torch.bool),
-    )
-    return DataLoader(ds, batch_size=batch_size, shuffle=shuffle)
+@dataclass
+class EventData:
+    """Model inputs for a set of events.
+
+    ``x`` is (N, n_objects * n_features) for "flat" input or (N, n_objects, n_features) for
+    "objects" input. ``mask`` is (N, n_objects): True for real objects, False for padding.
+    """
+
+    x: np.ndarray
+    mask: np.ndarray
+
+    def __len__(self) -> int:
+        return len(self.x)
 
 
-def create_dataloaders(
+def make_dataset(x, mask, input_type: str = "flat") -> EventData:
+    return EventData(_to_input(x, input_type).astype(np.float32), mask.astype(bool))
+
+
+def create_datasets(
     config_path: str,
-    batch_size: int = 1024,
-    shuffle: bool = True,
     input_type: str = "flat",  # "flat": (N, n_objects * n_features), "objects": (N, n_objects, n_features)
     apply_scaling: bool = True,
     load_test: bool = False,
-) -> Tuple[DataLoader, DataLoader, Optional[Dict[str, DataLoader]]]:
-    """Build train / val loaders, and optionally one test loader per sample.
+) -> Tuple[EventData, EventData, Optional[Dict[str, EventData]]]:
+    """Build the train / val datasets, and optionally one test dataset per sample.
 
-    Each batch is ``(x, mask)``. ``mask`` is True for real objects, False for padding.
-    The test loaders are keyed by sample name: the background first, then each signal.
+    The test datasets are keyed by sample name: the background first, then each signal.
     """
     cfg = load_config(config_path)
     max_events = cfg.get("max_events", {})
 
-    def loader(entries, n, shuffle_):
+    def load(entries, n):
         x, mask, _ = load_arrays(entries, cfg, n, apply_scaling)
-        return make_loader(x, mask, input_type, batch_size, shuffle_)
+        return make_dataset(x, mask, input_type)
 
-    train_loader = loader(cfg["train"], max_events.get("train"), shuffle)
-    val_loader = loader(cfg["val"], max_events.get("val"), False)
+    train = load(cfg["train"], max_events.get("train"))
+    val = load(cfg["val"], max_events.get("val"))
 
-    test_loaders = None
+    test = None
     if load_test:
-        test_loaders = {}
+        test = {}
         n = max_events.get("test")
-        test_loaders["background"] = loader(cfg["test"]["background"], n, False)
+        test["background"] = load(cfg["test"]["background"], n)
         for sample, split in cfg["test"]["signals"]:
-            test_loaders[sample] = loader([[sample, split]], n, False)
+            test[sample] = load([[sample, split]], n)
 
-    return train_loader, val_loader, test_loaders
+    return train, val, test
 
 
 if __name__ == "__main__":
     # Example usage: python dataloader.py
-    train_loader, val_loader, _ = create_dataloaders("config/baseline.yml", batch_size=64)
+    train, val, _ = create_datasets("config/baseline.yml")
 
-    print(f"Number of training batches: {len(train_loader)}")
-    print(f"Number of validation batches: {len(val_loader)}")
-
-    for batch_idx, (x, mask) in enumerate(train_loader):
-        print(f"Batch {batch_idx}: x shape = {x.shape}, mask shape = {mask.shape}")
-        if batch_idx == 2:
-            break
+    print(f"Training events:   {len(train):,}  x shape = {train.x.shape}, mask shape = {train.mask.shape}")
+    print(f"Validation events: {len(val):,}")

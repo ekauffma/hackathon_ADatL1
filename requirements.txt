@@ -14,6 +14,8 @@ tensorflow==2.15.1
 qkeras @ git+https://github.com/julesmuhizi/qkeras.git@qdense_batchnorm
 hls4ml @ git+https://github.com/AdrianAlan/hls4ml.git@cicada
 onnx<1.19
+# 0.8 (pulled in by qkeras) sets TF_USE_LEGACY_KERAS=1 on import, which makes tf.keras switch to tf_keras mid-session
+tensorflow-model-optimization<0.8
 
 # Plotting
 matplotlib>=3.7

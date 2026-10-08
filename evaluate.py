@@ -6,18 +6,15 @@ Edit MODELS / CONFIG below, then run:  python evaluate.py
 import csv
 from pathlib import Path
 
-import torch
-
-from dataloader import create_dataloaders
-from models import registry
-from models.sklearn_wrapper import SklearnModelWrapper
+from dataloader import create_datasets
 from plotting import plot_roc, plot_score_distributions, plot_signal_efficiency
-from utils import compute_scores, efficiency_at_acceptance, get_device, roc
+from utils import compute_scores, efficiency_at_acceptance, input_type_of, load_model, roc
 
 # (display name, path to a model saved by train.py)
 MODELS = [
-    ("dense-ae", "output/baseline/best_model.pth"),
-    ("tiny-ae", "output/tiny/best_model.pth"),
+    ("dense-ae", "output/baseline/best_model.h5"),
+    ("tiny-ae", "output/tiny/best_model.h5"),
+    ("tiny-qae", "output/tiny-q/best_model.h5"),
     ("pca", "output/pca/best_model.pkl"),
 ]
 # The test samples (background + signals) come from this config.
@@ -27,18 +24,11 @@ CONFIG = "config/baseline.yml"
 # TODO(organisers): choose the operating point for the hackathon.
 ACCEPTANCE = 1e-3
 
-device = get_device("auto")
 outdir = Path("output/evaluation")
 
 
-def load_model(path: str):
-    if str(path).endswith(".pkl"):
-        return SklearnModelWrapper.load(path)
-    return torch.load(path, map_location=device, weights_only=False).to(device)
-
-
 def main():
-    test_loaders = {}  # loaded once per input type, then reused
+    test_sets = {}  # loaded once per input type, then reused
     efficiencies, rows = {}, []
 
     for model_name, model_path in MODELS:
@@ -48,17 +38,13 @@ def main():
 
         print(f"\n[INFO] Loading model from {model_path}...")
         model = load_model(model_path)
-        architecture, model_cfg = registry.class_to_config(type(model))
-        input_type = model_cfg["input_type"]
-        print(f"[INFO] Evaluating {architecture} with input_type={input_type}...")
+        input_type = input_type_of(model)
+        print(f"[INFO] Evaluating {model_name} with input_type={input_type}...")
 
-        if input_type not in test_loaders:
-            _, _, test_loaders[input_type] = create_dataloaders(
-                CONFIG, shuffle=False, input_type=input_type, load_test=True
-            )
-        loaders = test_loaders[input_type]
+        if input_type not in test_sets:
+            _, _, test_sets[input_type] = create_datasets(CONFIG, input_type=input_type, load_test=True)
 
-        scores = {name: compute_scores(model, loader, device) for name, loader in loaders.items()}
+        scores = {name: compute_scores(model, data) for name, data in test_sets[input_type].items()}
         bkg = scores["background"]
 
         rocs, efficiencies[model_name] = {}, {}

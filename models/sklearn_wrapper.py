@@ -1,7 +1,7 @@
 """Classical (non-deep-learning) anomaly detectors from scikit-learn.
 
-They follow the same convention as the PyTorch models: ``score(x, mask)`` returns one
-anomaly score per event, higher = more anomalous.
+Like the Keras models, ``score(x, mask)`` returns one anomaly score per event,
+higher = more anomalous.
 """
 
 import pickle

@@ -3,8 +3,13 @@ import os
 from typing import Tuple
 
 import numpy as np
-import torch
+from qkeras.utils import load_qmodel
 from sklearn.metrics import roc_auc_score, roc_curve
+from tensorflow import keras
+
+from models.autoencoder import anomaly_score
+from models.registry import class_to_config
+from models.sklearn_wrapper import SklearnModelWrapper
 
 
 class CreateFolder(argparse.Action):
@@ -15,60 +20,35 @@ class CreateFolder(argparse.Action):
         setattr(namespace, self.dest, values)
 
 
-def get_device(device_str: str = "auto") -> torch.device:
-    if device_str == "auto":
-        if torch.cuda.is_available():
-            return torch.device("cuda")
-        if torch.backends.mps.is_available():
-            return torch.device("mps")
-        return torch.device("cpu")
-    device = torch.device(device_str)
-    if device.type == "cuda":
-        assert torch.cuda.is_available(), "CUDA device is not available."
-    elif device.type == "mps":
-        assert torch.backends.mps.is_available(), "MPS device is not available."
-    return device
-
-
-class EarlyStopping:
-    def __init__(self, patience: int = 5, min_delta: float = 0.0):
-        """
-        Args:
-            patience: how many evaluations to wait after the last improvement.
-            min_delta: minimum change in the monitored quantity to count as improvement.
-        """
-        self.patience = patience
-        self.min_delta = min_delta
-        self.best_loss = float("inf")
-        self.counter = 0
-        self.early_stop = False
-
-    def step(self, val_loss: float) -> bool:
-        if val_loss < self.best_loss - self.min_delta:
-            self.best_loss = val_loss
-            self.counter = 0
-        else:
-            self.counter += 1
-        if self.counter >= self.patience:
-            self.early_stop = True
-        return self.early_stop
+def is_keras(model) -> bool:
+    return isinstance(model, keras.Model)
 
 
 def count_parameters(model) -> int:
-    if isinstance(model, torch.nn.Module):
-        return sum(p.numel() for p in model.parameters() if p.requires_grad)
+    if is_keras(model):
+        return int(sum(np.prod(w.shape) for w in model.trainable_weights))
     return 0
 
 
-@torch.no_grad()
-def compute_scores(model, loader, device="cpu") -> np.ndarray:
-    """Anomaly score of every event in a loader (works for torch and sklearn models)."""
-    if isinstance(model, torch.nn.Module):
-        model.eval()
-        scores = [model(x.to(device), mask.to(device)).cpu() for x, mask in loader]
-        return torch.cat(scores).numpy()
-    x, mask = (t.numpy() for t in loader.dataset.tensors)
-    return model.score(x, mask)
+def input_type_of(model) -> str:
+    """The input type ("flat" or "objects") a trained model expects."""
+    if is_keras(model):
+        return "flat" if len(model.input_shape) == 2 else "objects"
+    return class_to_config(type(model))[1]["input_type"]
+
+
+def compute_scores(model, data) -> np.ndarray:
+    """Anomaly score of every event in an EventData (works for Keras and sklearn models)."""
+    if is_keras(model):
+        return anomaly_score(model, data.x, data.mask)
+    return model.score(data.x, data.mask)
+
+
+def load_model(path):
+    """Load a model saved by train.py: .h5 (Keras / QKeras) or .pkl (sklearn)."""
+    if str(path).endswith(".pkl"):
+        return SklearnModelWrapper.load(path)
+    return load_qmodel(str(path), compile=False)  # also loads plain Keras models
 
 
 # ---------------------------------------------------------------------------

@@ -12,10 +12,9 @@ def savefig(fig, path: Path, dpi: int = 160):
     print(f"[PLOT] saved {path}")
 
 
-def plot_data_distributions(data_loader, feature_names=("Et", "eta", "phi"), outpath=None):
-    """Histogram each (scaled) input feature over the real objects in a loader."""
-    x, mask = (t.numpy() for t in data_loader.dataset.tensors)
-    x = x.reshape(len(x), mask.shape[1], -1)[mask]  # (n_objects_total, n_features)
+def plot_data_distributions(data, feature_names=("Et", "eta", "phi"), outpath=None):
+    """Histogram each (scaled) input feature over the real objects in an EventData."""
+    x = data.x.reshape(len(data.x), data.mask.shape[1], -1)[data.mask]  # (n_objects_total, n_features)
     fig, axes = plt.subplots(1, x.shape[1], figsize=(4 * x.shape[1], 3.5))
     for i, ax in enumerate(np.atleast_1d(axes)):
         ax.hist(x[:, i], bins=100, histtype="step")
@@ -28,13 +27,13 @@ def plot_data_distributions(data_loader, feature_names=("Et", "eta", "phi"), out
 
 
 def plot_loss_curve(history: Dict[str, List[Tuple[int, float]]], outpath=None):
-    """history: {"train": [(step, loss), ...], "val": [(step, loss), ...]}"""
+    """history: {"train": [(epoch, loss), ...], "val": [(epoch, loss), ...]}"""
     fig, ax = plt.subplots(figsize=(6, 4))
     for name, points in history.items():
         if points:
-            steps, losses = zip(*points)
-            ax.plot(steps, losses, label=name)
-    ax.set_xlabel("training step")
+            epochs, losses = zip(*points)
+            ax.plot(epochs, losses, label=name)
+    ax.set_xlabel("epoch")
     ax.set_ylabel("loss")
     ax.set_yscale("log")
     ax.legend()

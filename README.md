@@ -26,7 +26,7 @@ All three evaluate on the same zero-bias test data and the same set of simulated
 <!-- TODO(organisers): the research question. For example:
 The goal is to train a model that flags signal events as anomalous while keeping only a small fraction
 of normal events. In particular, we want to compare:
-- the models in `models/` (dense autoencoder, tiny autoencoder, PCA, isolation forest)
+- the models in `models/` (dense autoencoder, tiny autoencoder, quantized tiny autoencoder (QKeras), PCA, isolation forest)
 - a model trained on real data vs. one trained on simulation
 The question is: ...
 -->
@@ -55,7 +55,7 @@ python evaluate.py
 |---|---|
 | `config/*.yml` | data configs: which samples to train / validate / test on, input layout, scaling |
 | `dataset.py` | download the data and read it into arrays (awkward / numpy) |
-| `dataloader.py` | turn a data config into PyTorch DataLoaders |
+| `dataloader.py` | turn a data config into arrays ready for Keras / scikit-learn |
 | `models/` | model definitions (`autoencoder.py`, `sklearn_wrapper.py`) and the model registry |
 | `train.py` | train a model, saving the best one to `--output` |
 | `evaluate.py` | signal efficiency at a fixed zero-bias acceptance, ROC curves, score plots |
