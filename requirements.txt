@@ -13,6 +13,7 @@ scikit-learn>=1.3
 tensorflow==2.15.1
 qkeras @ git+https://github.com/julesmuhizi/qkeras.git@qdense_batchnorm
 hls4ml @ git+https://github.com/AdrianAlan/hls4ml.git@cicada
+onnx<1.19
 
 # Plotting
 matplotlib>=3.7
