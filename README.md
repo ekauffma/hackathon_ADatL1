@@ -7,12 +7,12 @@ High-energy colliders, like the Large Hadron Collider, accelerate particles and 
 
 One way to address this question is by designing a trigger which is an anomaly detection algorithm. Anomaly detection algorithms are typically designed around autoencoders, which is a machine learning model that compresses the input down to a low-dimensional latent space and then decompresses the latent space representation to match the input as closely as possible.
 
-![Autoencoder](images/anomaly_detection.png)
+<img src="images/anomaly_detection.png" width="300">
 
 ### CMS Level-1 Trigger Requirements
 
-![CMS L1T Schematic](images/CMS-PAS-MLG-25-001_Figure_001.png)
-![Latency Comparison](images/latency_comparison.png)
+<img src="images/CMS-PAS-MLG-25-001_Figure_001.png" width="300">
+<img src="images/latency_comparison.png" width="300">
 
 
 Look at the config files in `config/`. They define three datasets:
