@@ -1,9 +1,19 @@
 ## Hackathon Project: Anomaly Detection at the CMS Level-1 Trigger
 
+High-energy colliders, like the Large Hadron Collider, accelerate particles and smash them together, recreating early-universe conditions to search for new phenomena. These collisions generate more data than can be stored, so the CMS Level-1 Trigger system must decide what to keep within microseconds, retaining some events and discarding others permanently. Consequently, there is a danger of discarding new physics: if the next discovery looks unlike anything we have predicted, how can we design a trigger that knows to keep it?
 
-<div style="background-color: #ffd1dc; border-left: 6px solid #ff69b4; padding: 10px; border-radius: 4px;">
-  <strong>Pink Box:</strong> High-energy colliders, like the Large Hadron Collider, accelerate particles and smash them together, recreating early-universe conditions to search for new phenomena. These collisions generate more data than can be stored, so the CMS Level-1 Trigger system must decide what to keep within microseconds, retaining some events and discarding others permanently. Consequently, there is a danger of discarding new physics: if the next discovery looks unlike anything we have predicted, how can we design a trigger that knows to keep it?
-</div>
+
+### Anomaly Detection
+
+One way to address this question is by designing a trigger which is an anomaly detection algorithm. Anomaly detection algorithms are typically designed around autoencoders, which is a machine learning model that compresses the input down to a low-dimensional latent space and then decompresses the latent space representation to match the input as closely as possible.
+
+![Autoencoder](images/anomaly_detection.png)
+
+### CMS Level-1 Trigger Requirements
+
+![CMS L1T Schematic](images/CMS-PAS-MLG-25-001_Figure_001.png)
+![Latency Comparison](images/latency_comparison.png)
+
 
 Look at the config files in `config/`. They define three datasets:
 - `baseline`: train on one run of real zero-bias collision data
