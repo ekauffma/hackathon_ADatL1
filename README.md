@@ -8,6 +8,36 @@ High-energy colliders, like the Large Hadron Collider, accelerate particles and 
 
 Since the discovery of the Higgs boson in 2012, there have been no clear signs of new fundamental particles. CMS has searched for many specific new-physics scenarios, but what if new physics is something nobody has thought of yet? To get the most out of the LHC, we need to explore every way of finding it, including ways that don't depend on knowing in advance what it looks like.
 
+### Getting started
+
+1. Clone the repository in JupyterLab and open [`setup.ipynb`](setup.ipynb). On BinderHub it installs the few
+   libraries missing from the image; elsewhere it creates a virtual environment and registers it as a Jupyter kernel.
+   It then checks the GPU and downloads the data.
+2. [`explore_data.ipynb`](explore_data.ipynb): a tour of the dataset.
+3. [`train.ipynb`](train.ipynb): choose the input objects and features, choose or write a model, and train it.
+   Run it as it is to train the baseline `dense-ae`; set `model_type = "dense-qae"` to train the quantized one.
+4. [`evaluate.ipynb`](evaluate.ipynb): compare models, save each one as a trial, and plot all trials
+   (performance vs. cost).
+5. [`convert_hls4ml.ipynb`](convert_hls4ml.ipynb): convert a model to FPGA firmware with hls4ml, check how
+   fixed-point arithmetic changes its output, and convert a quantization-aware trained (Brevitas) model.
+6. Submit your best model to the [leaderboard](LEADERBOARD.md): see [How to submit](#how-to-submit).
+
+The TODOs in the notebooks mark the places to make choices or fill in code. Add your own models in the notebook or in
+`models/autoencoder.py` with the `@register(...)` decorator.
+
+### Repository layout
+
+| File | What it does |
+|---|---|
+| `config/*.yml` | data configs: which samples to train / validate / test on, and the input scaling |
+| `dataset.py` | download the data and read it into arrays (awkward / numpy) |
+| `dataloader.py` | turn a data config and an input choice (layout, features) into arrays ready for PyTorch |
+| `models/` | model definitions and quantized layers (`autoencoder.py`), and the model registry |
+| `utils.py` | training, metrics, model cost (BOPs), trials, and hls4ml / QONNX helpers |
+| `plotting.py` | plots |
+| `submissions/` | the leaderboard entries, one folder per team (see [Leaderboard](#leaderboard)) |
+| `leaderboard/` | scoring (`score.py`) and the leaderboard table (`render.py`), run by the workflows in `.github/workflows/` |
+
 ### The CMS trigger system
 
 Proton bunches collide in CMS every 25 ns, 40 million times per second. Far too much data to store, so a two-stage *trigger* selects the events to keep:
@@ -222,36 +252,6 @@ Things to know:
 - The test samples are public, so it is possible to tune to them. Don't: the point is a model that finds new
   physics nobody has simulated yet. `config/extended_signals.yml` has 16 more signals to check that your model
   generalises.
-
-### Getting started
-
-1. Clone the repository in JupyterLab and open [`setup.ipynb`](setup.ipynb). On BinderHub it installs the few
-   libraries missing from the image; elsewhere it creates a virtual environment and registers it as a Jupyter kernel.
-   It then checks the GPU and downloads the data.
-2. [`explore_data.ipynb`](explore_data.ipynb): a tour of the dataset.
-3. [`train.ipynb`](train.ipynb): choose the input objects and features, choose or write a model, and train it.
-   Run it as it is to train the baseline `dense-ae`; set `model_type = "dense-qae"` to train the quantized one.
-4. [`evaluate.ipynb`](evaluate.ipynb): compare models, save each one as a trial, and plot all trials
-   (performance vs. cost).
-5. [`convert_hls4ml.ipynb`](convert_hls4ml.ipynb): convert a model to FPGA firmware with hls4ml, check how
-   fixed-point arithmetic changes its output, and convert a quantization-aware trained (Brevitas) model.
-6. Submit your best model to the [leaderboard](LEADERBOARD.md): see [How to submit](#how-to-submit).
-
-The TODOs in the notebooks mark the places to make choices or fill in code. Add your own models in the notebook or in
-`models/autoencoder.py` with the `@register(...)` decorator.
-
-### Repository layout
-
-| File | What it does |
-|---|---|
-| `config/*.yml` | data configs: which samples to train / validate / test on, and the input scaling |
-| `dataset.py` | download the data and read it into arrays (awkward / numpy) |
-| `dataloader.py` | turn a data config and an input choice (layout, features) into arrays ready for PyTorch |
-| `models/` | model definitions and quantized layers (`autoencoder.py`), and the model registry |
-| `utils.py` | training, metrics, model cost (BOPs), trials, and hls4ml / QONNX helpers |
-| `plotting.py` | plots |
-| `submissions/` | the leaderboard entries, one folder per team (see [Leaderboard](#leaderboard)) |
-| `leaderboard/` | scoring (`score.py`) and the leaderboard table (`render.py`), run by the workflows in `.github/workflows/` |
 
 ### Citation
 
