@@ -12,4 +12,12 @@ See [How to submit](README.md#how-to-submit) to add your team.
 | 3 | [baseline-dense-qae](submissions/baseline-dense-qae) | 0.8112 | 0.7339 | 0.9123 | 0.4934 | 470,811 | [`d297f57`](https://github.com/ekauffma/hackathon_ADatL1/commit/d297f57a9ac2adc3d709d12a2aed9d6ab0f16b12) 2026-10-16 03:37 by [ekauffma](https://github.com/ekauffma) |
 | 4 | [baseline-dense-ae](submissions/baseline-dense-ae) | 0.8084 | 0.7357 | 0.9102 | 0.4867 | 2,575,131 | [`d297f57`](https://github.com/ekauffma/hackathon_ADatL1/commit/d297f57a9ac2adc3d709d12a2aed9d6ab0f16b12) 2026-10-16 03:37 by [ekauffma](https://github.com/ekauffma) |
 
-*Last updated 2026-10-16 08:43 UTC.*
+## Submissions that could not be scored
+
+Look at the log of the latest *Leaderboard* workflow run for the full error.
+
+| team | error | submitted |
+|---|---|---|
+| [BOP_Reducers](submissions/BOP_Reducers) | AttributeError: module 'models.autoencoder' has no attribute 'compact_quantized_autoencoder_4layer' | [`75db034`](https://github.com/ekauffma/hackathon_ADatL1/commit/75db03431d508f80c13121960c00422943a2baa5) 2026-10-16 06:45 by [Simar007005](https://github.com/Simar007005) |
+
+*Last updated 2026-10-16 08:45 UTC.*
