@@ -1,0 +1,13 @@
+layout:
+  MET: 1
+  muons: 3
+  jets: 7
+  egammas: 2
+  taus: 2
+features:
+- Et
+- eta
+- phi
+input_type: flat
+data_config: config/baseline.yml
+bits: 3
